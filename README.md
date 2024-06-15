@@ -52,6 +52,7 @@ Prior to 3/9/2023, GPT-NeoX relied on [DeeperSpeed](https://github.com/EleutherA
     + [Containerized Setup](#containerized-setup)
   * [Usage](#usage)
 - [Configuration](#configuration)
+    * [Mixture of Experts](#mixture-of-experts)
 - [Datasets](#datasets)
   * [Preconfigured Datasets](#preconfigured-datasets)
   * [Using Custom Data](#using-custom-data)
@@ -95,7 +96,6 @@ To install the remaining basic dependencies, run:
 pip install -r requirements/requirements.txt
 pip install -r requirements/requirements-wandb.txt # optional, if logging using WandB
 pip install -r requirements/requirements-tensorboard.txt # optional, if logging via tensorboard
-python ./megatron/fused_kernels/setup.py install # optional, if using fused kernels
 ```
 
 from the repository root.
@@ -104,6 +104,16 @@ from the repository root.
 > Our codebase relies on [DeeperSpeed](https://github.com/EleutherAI/DeeperSpeed), our fork of the [DeepSpeed](https://github.com/microsoft/DeepSpeed) library with some added changes. We strongly recommend using Anaconda, a virtual machine, or some other form of environment isolation before continuing. Failure to do so may cause other repositories that rely on DeepSpeed to break.
 
 </aside>
+
+### Fused Kernels
+We now support AMD GPUs (MI100, MI250X) through JIT fused-kernel compilation. Fused kernels will be built and loaded as needed. To avoid waiting during job launching, you can also do the following for manual pre-build:
+
+```python
+python
+from megatron.fused_kernels import load
+load()
+```
+This will automatically adapts building process over different GPU vendors (AMD, NVIDIA) without platform specific code changes. To further test fused kernels using `pytest`, use `pytest tests/model/test_fused_kernels.py`
 
 ### Flash Attention
 
@@ -321,6 +331,80 @@ GPT-NeoX parameters are defined in a YAML configuration file which is passed to 
 These files are generally complete, but non-optimal. For example, depending on your specific GPU configuration, you may need to change some settings such as `pipe-parallel-size`, `model-parallel-size` to increase or decrease the degree of parallelisation, `train_micro_batch_size_per_gpu` or `gradient-accumulation-steps` to modify batch size related settings, or the `zero_optimization` dict to modify how optimizer states are parallelised across workers.
 
 For a more detailed guide to the features available and how to configure them, see [the configuration README](configs/README.md), and for documentation of every possible argument, see [configs/neox_arguments.md](configs/neox_arguments.md).
+
+## Mixture of Experts
+
+GPT-NeoX includes multiple expert implementations for MoE. To select between them, specify `moe_type` of `megablocks` (default) or `deepspeed`.
+
+Both are based on the DeepSpeed MoE parallelism framework, which supports tensor-expert-data parallelism.
+Both allow you to toggle between token-dropping and dropless (default, and this is what Megablocks was designed for).
+Sinkhorn routing to come soon!
+
+For an example of a basic complete configuration, see configs/125M-dmoe.yml (for Megablocks dropless) or configs/125M-moe.yml.
+
+Most MoE related configuration arguments are prefixed with `moe`. Some common configuration parameters and their defaults are as follows:
+
+```
+moe_type: megablocks
+moe_num_experts: 1 # 1 disables MoE. 8 is a reasonable value.
+moe_loss_coeff: 0.1
+expert_interval: 2 # See details below
+enable_expert_tensor_parallelism: false # See details below
+moe_expert_parallel_size: 1 # See details below
+moe_token_dropping: false
+```
+
+DeepSpeed can be further configured with the following:
+
+```
+moe_top_k: 1
+moe_min_capacity: 4
+moe_train_capacity_factor: 1.0 # Setting to 1.0
+moe_eval_capacity_factor: 1.0 # Setting to 1.0
+```
+
+One MoE layer is present every `expert_interval` transformer layers including the first, so with 12 layers total:
+
+```
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11
+```
+
+Experts would be in these layers:
+
+```
+0, 2, 4, 6, 8, 10
+```
+
+By default, we use expert-data parallelism, so any available tensor parallelism (`model_parallel_size`) will be used for expert routing. For instance, given the following:
+
+```
+expert_parallel_size: 4
+model_parallel_size: 2 # aka tensor parallelism
+```
+
+With 32 GPUs, the behavior will be look like:
+
+- In non-expert layers:
+  - Tensor parallelism is 2. (There are 32 / 2 = 16 such tensor parallel groups, each of size 2.)
+  - Data parallelism implicitly becomes 32 / 2 = 16.
+- In expert layers:
+  - There is no tensor parallelism.
+  - Expert parallelism is 4. (There are 32 / 4 = 8 expert parallel groups, each of size 4.)
+  - Data parallelism implicitly becomes 32 / 4 = 8.  Some cross-node token routing happens as a result of this redivision of data parallelism between 16 and 8.  To avoid it, ensure that `expert_parallel_size == model_parallel_size`.
+
+Setting `enable_expert_tensor_parallelism` enables tensor-expert-data (TED) parallelism. The way to interpret the above would then be:
+
+- In non-expert layers: same as before.
+- In expert layers:
+  - Tensor parallelism is 2. (There are 32 / 2 = 16 tensor parallel groups, each of size 2.)
+  - Expert parallelism is 4. (There are 32 / 4 = 8 expert parallel groups, each of size 4.)
+  - Data parallelism implicitly becomes 32 / (2 * 4) = 4.  Again, cross-node token routing happens.  To avoid, ensure `expert_parallel_size == 1` or `model_parallel_size == 1`.
+
+So note that DP must be divisible by (MP * EP).  For more details, see the [TED paper].
+
+Pipeline parallelism is not yet supported - coming soon!
+
+[TED paper]: https://arxiv.org/abs/2303.06318
 
 # Datasets
 
@@ -565,7 +649,7 @@ If you need to supply a hostfile for use with the MPI-based DeepSpeed launcher, 
 
 # Profiling
 
-We support profiling with Nsight Systems and PyTorch Memory Profiling.
+We support profiling with Nsight Systems, the PyTorch Profiler, and PyTorch Memory Profiling.
 
 ## Nsight Systems Profiling
 
@@ -580,6 +664,15 @@ $TRAIN_PATH/train.py --conf_dir configs <config files>
 The generated output file can then by viewed with the Nsight Systems GUI:
 
 ![Alt text](images/nsight_profiling.png)
+
+## PyTorch Profiling
+
+To use the built-in PyTorch profiler, set config options `profile`, `profile_step_start`, and `profile_step_stop`.
+
+The PyTorch profiler will save traces to your `tensorboard` log directory.  You can view these traces within
+TensorBoard by following the steps [here](https://pytorch.org/tutorials/intermediate/tensorboard_profiler_tutorial.html).
+
+![Alt text](images/pytorch_profiling.png)
 
 ## PyTorch Memory Profiling
 

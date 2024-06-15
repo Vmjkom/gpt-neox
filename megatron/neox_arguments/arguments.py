@@ -180,7 +180,6 @@ class NeoXArgs(*BASE_CLASSES):
         config_files = dict()
         # iterate of all to be loaded yaml files
         for conf_file_name in paths_to_yml_files:
-
             # load file
             with open(conf_file_name) as conf_file:
                 conf = yaml.load(conf_file, Loader=yaml.FullLoader)
@@ -477,7 +476,6 @@ class NeoXArgs(*BASE_CLASSES):
         return extra_ds_args
 
     def get_deepspeed_main_args(self):
-
         args_list = list()
 
         if self.autotuning_run is not None:
@@ -796,14 +794,11 @@ class NeoXArgs(*BASE_CLASSES):
 
         # either none of the three parameters are provided or just gradient_accumulation_step is provided
         else:
-            assert (
-                False
-            ), "Either train_batch_size or train_micro_batch_size_per_gpu needs to be provided"
+            assert False, "Either train_batch_size or train_micro_batch_size_per_gpu needs to be provided"
         return int(train_batch), int(micro_batch), int(grad_acc)
 
     @staticmethod
     def check_batch_parameters(dp_world_size, train_batch, micro_batch, grad_acc):
-
         assert (
             train_batch > 0
         ), f"Train batch size: {train_batch} has to be greater than 0"
@@ -1033,14 +1028,13 @@ class NeoXArgs(*BASE_CLASSES):
         # Update 'is pipe parallel' flag
         # if we set pipe_parallel_size to 0 or 1, GPT2ModelPipe.to_sequential() is called, and we run training with
         # the sequential model without the PipelineModule wrapper to avoid the overhead it incurs
-        self.update_value(
-            "is_pipe_parallel", self.pipe_parallel_size > 1 and self.num_experts == 1
-        )
-        if self.num_experts > 1:
+        self.update_value("is_pipe_parallel", self.pipe_parallel_size >= 1)
+        if self.moe_num_experts > 1:
             assert not (
                 self.is_pipe_parallel or self.pipe_parallel_size > 1
             ), "MoE not supported with pipeline parallelism"
             assert self.zero_optimization["stage"] != 3, "MoE not compatible with zero3"
+            assert self.mlp_type == "regular", "MoE not compatible with LLaMA"
 
         # Attention config
         if self.attention_config is None:
@@ -1066,6 +1060,15 @@ class NeoXArgs(*BASE_CLASSES):
             assert (
                 self.hidden_dropout == 0.0,
             ), "Mamba does not yet have dropout implemented"
+        if "rwkv" in self.attention_config:
+            assert (
+                self.model_parallel_size == 1
+            ), "RWKV not currently compatible with model parallelism"
+            if isinstance(self.zero_stage, int):
+                assert self.zero_stage <= 2, "Zero stage 3 not compatible with RWKV"
+            assert (
+                self.hidden_dropout == 0.0,
+            ), "RWKV does not yet have dropout implemented"
 
         # Sparsity config
         if self.sparsity_config is None:
@@ -1095,8 +1098,8 @@ class NeoXArgs(*BASE_CLASSES):
         if "flash" in self.attention_config:
             _flash_version = packaging.version.Version(version("flash-attn"))
             if self.sliding_window_width is not None:
-                assert _flash_version >= packaging.version.Version(
-                    "2.3.0"
+                assert (
+                    _flash_version >= packaging.version.Version("2.3.0")
                 ), f"Flash-Attention version ({str(_flash_version)}) must be >= 2.3.0 to support sliding window attention."
             if self.pos_emb == "alibi":
                 if not _flash_version >= packaging.version.Version("2.4.0.post1"):
@@ -1223,7 +1226,6 @@ class NeoXArgs(*BASE_CLASSES):
 
         # Parameters sharing does not work with torch DDP.
         if (self.num_unique_layers is not None) and (self.num_layers is not None):
-
             if not (self.num_unique_layers <= self.num_layers):
                 error_message = (
                     self.__class__.__name__
