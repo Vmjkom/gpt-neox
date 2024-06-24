@@ -19,7 +19,7 @@
 
   "attention_config": [[["flash"], 32]],
   
-  "scaled_upper_triang_masked_softmax_fusion": false,
+  "scaled_upper_triang_masked_softmax_fusion": true,
   "bias_gelu_fusion": false,
   "use_bias_in_norms": false,
   "use_bias_in_attn_linear": false,

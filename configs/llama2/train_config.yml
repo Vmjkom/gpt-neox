@@ -20,7 +20,7 @@
 
   # for all zero_optimization options, see https://www.deepspeed.ai/docs/config-json/#zero-optimizations-for-fp16-training
    "zero_optimization": {
-   "stage": 1,
+   "stage": 0,
    "allgather_partitions": true,
    "allgather_bucket_size": 500000000,
    "overlap_comm": true,
@@ -73,11 +73,11 @@
   # logging
   "log_interval": 10,
   "steps_per_print": 5,
-  "keep_last_n_checkpoints": 4,
+  #"keep_last_n_checkpoints": 4,
   "wall_clock_breakdown": true,
   "comms_logger": {
-        "enabled": true,
-        "verbose": true,
+        "enabled": false,
+        "verbose": false,
         "prof_all": true,
         "debug": False
     }

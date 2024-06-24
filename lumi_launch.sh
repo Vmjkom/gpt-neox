@@ -1,5 +1,5 @@
 #!/bin/bash
-source /opt/miniconda3/bin/activate pytorch
+#source /opt/miniconda3/bin/activate pytorch
 export WORLD_SIZE=$SLURM_NTASKS
 export RANK=$SLURM_PROCID
 export LOCAL_RANK=$SLURM_LOCALID

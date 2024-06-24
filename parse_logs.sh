@@ -10,6 +10,7 @@ parse_logs() {
     local total_samples=0
     local flops_count=0
     local samples_count=0
+    local has_flops=false
     
     while IFS= read -r line
     do
@@ -18,6 +19,7 @@ parse_logs() {
             flops=${BASH_REMATCH[1]}
             total_flops=$(echo "$total_flops + $flops" | bc)
             flops_count=$((flops_count + 1))
+            has_flops=true
         fi
         
         # Check if the line contains 'samples/sec'
@@ -27,6 +29,13 @@ parse_logs() {
             samples_count=$((samples_count + 1))
         fi
     done < "$file"
+    
+    # If the file does not contain 'approx flops per GPU', remove it
+    if ! $has_flops; then
+        echo "Removing file: $file (no 'approx flops per GPU' found)"
+        rm "$file"
+        return
+    fi
     
     # Calculate averages
     if [ $flops_count -ne 0 ]; then

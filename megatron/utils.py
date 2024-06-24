@@ -405,6 +405,7 @@ def get_total_params(model):
         params = 0
 
     total_n_parameters = torch.tensor([params]).cuda(torch.cuda.current_device())
+    #torch.distributed.barrier()
     torch.distributed.all_reduce(total_n_parameters)
     total_n_parameters = total_n_parameters.item()
     return total_n_parameters

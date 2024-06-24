@@ -25,7 +25,7 @@ from pkg_resources import packaging
 from importlib.metadata import version
 
 from .norms import get_norm
-from megatron import mpu
+from megatron import mpu,print_rank_0
 from megatron.model import megablocks_utils
 from megatron.model.fused_softmax import FusedScaleMaskSoftmax
 from megatron.model.activations import get_activation
@@ -497,7 +497,8 @@ class ParallelSelfAttention(nn.Module):
                 from flash_attn.flash_attn_triton import (
                     flash_attn_func as flash_attn_unpadded_unpacked_func_triton,
                 )
-
+                print_rank_0(flash_attn_func)
+                #print_rank_0("Import flash_f from triton")
                 self.flash_triton_fn = flash_attn_unpadded_unpacked_func_triton
                 self.flash_qkv_fn = flash_attn_func
                 self.flash_varlen_qkv_fn = flash_attn_varlen_func

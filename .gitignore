@@ -159,3 +159,7 @@ pythonuserbase
 megatron/fused_kernels/*_hip*
 hostfiles
 core
+*.ipynb
+*.txt
+temp.txt
+parse_logs.sh

@@ -154,7 +154,7 @@ class NeoXArgs(*BASE_CLASSES):
                 from torch.utils.tensorboard import SummaryWriter
 
                 print("> setting tensorboard ...")
-                self.tensorboard_writer = SummaryWriter(log_dir=self.tensorboard_dir)
+                self.tensorboard_writer = SummaryWriter(log_dir=self.tensorboard_dir+str(os.environ['SLURM_JOB_NAME']))
             except (ModuleNotFoundError, ImportError):
                 print(
                     "WARNING: TensorBoard writing requested but is not "
@@ -545,7 +545,7 @@ class NeoXArgs(*BASE_CLASSES):
         # add user script
         args_list.append(self.user_script)
 
-        self.configure_distributed_args()
+        #self.configure_distributed_args()
         cwd = Path.cwd()
 
         # get deepspeed_config

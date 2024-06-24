@@ -18,7 +18,7 @@
    "output_layer_parallelism": "column",
 
    # these should provide some speedup but takes a while to build, set to true if desired
-   "scaled_upper_triang_masked_softmax_fusion": false,
+   "scaled_upper_triang_masked_softmax_fusion": true,
    "bias_gelu_fusion": false,
    "rope_fusion": false,
    "layernorm_fusion": false,
@@ -89,8 +89,5 @@
    "log_interval": 100,
    "steps_per_print": 10,
    "keep_last_n_checkpoints": 4,
-   "wall_clock_breakdown": true,
-
-  #  networking
-  "hostfile": "/mock_path"
+   "wall_clock_breakdown": false,
 }
