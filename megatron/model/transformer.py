@@ -497,8 +497,7 @@ class ParallelSelfAttention(nn.Module):
                 from flash_attn.flash_attn_triton import (
                     flash_attn_func as flash_attn_unpadded_unpacked_func_triton,
                 )
-                print_rank_0(flash_attn_func)
-                #print_rank_0("Import flash_f from triton")
+
                 self.flash_triton_fn = flash_attn_unpadded_unpacked_func_triton
                 self.flash_qkv_fn = flash_attn_func
                 self.flash_varlen_qkv_fn = flash_attn_varlen_func
@@ -640,7 +639,7 @@ class ParallelSelfAttention(nn.Module):
         )
 
         if self.use_flash_attention and not self.use_triton:
-
+            #print_rank_0("Not using triton")
             # [sk, b, np, hn] -> [b, sk, np, hn] -> [b * sk, 1, np, hn]
             key_layer = key_layer.transpose(0, 1).reshape(
                 output_size[0], output_size[3], self.num_kv_heads_per_partition, -1
@@ -668,7 +667,7 @@ class ParallelSelfAttention(nn.Module):
                     query_layer.device
                 ).to(torch.float32)
 
-            if not self.training:
+            if self.training:
                 batch_size = output_size[0]
                 max_seqlen_q = output_size[2]
                 max_seqlen_k = output_size[3]
@@ -711,8 +710,13 @@ class ParallelSelfAttention(nn.Module):
                     causal=is_causal,
                     **extra_kwargs,
                 )
+                
                 output = output.reshape(q_shape)
+                matmul_result = output
+                # [b, sq, np, hn] -> [b, np, sq, hn]
+                matmul_result = matmul_result.transpose(1, 2)
             else:
+                #print_rank_0("Not using varlen")
                 output = self.flash_qkv_fn(
                     query_layer,
                     key_layer,
@@ -728,6 +732,7 @@ class ParallelSelfAttention(nn.Module):
             matmul_result = matmul_result.transpose(1, 2)
 
         else:
+            #print_rank_0("Using triton line 732")
             # we still use Triton if using AliBi with flash-attn<2.4.0.post1.
 
             # [sq, b, np, hn] -> [b, sq, np, hn]
