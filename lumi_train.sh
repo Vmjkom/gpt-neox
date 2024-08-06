@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=test_neox_7B_NOFA
+#SBATCH --job-name=test_neox
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
 #SBATCH --mem=480G
 #SBATCH --exclusive
-#SBATCH --partition=standard-g
-#SBATCH --time=03:00:00
+#SBATCH --partition=dev-g
+#SBATCH --time=00:10:00
 #SBATCH --gpus-per-node=8
 #SBATCH --account=project_462000353
 #SBATCH --output=logs/%x-%j.out
@@ -16,10 +16,11 @@
 ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.out logs/latest.out
 ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.err logs/latest.err
 
-module purge
+module --force purge
+EBU_USER_PREFIX=/projappl/project_462000353/Easybuild
 module load LUMI/23.09
-module use /projappl/project_462000319/villekom/modules
-module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
+module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240617
+
 
 export TRANSFORMERS_CACHE=$HF_HOME
 
@@ -67,5 +68,5 @@ srun --cpu-bind=mask_cpu:$MYMASKS --label singularity exec $SIFPYTORCH \
     train.py $CONFIG \
     --hostfile $HOSTFILE
 
-#rm hostfiles/*
+rm hostfiles/*
 echo "END: $(date)"
