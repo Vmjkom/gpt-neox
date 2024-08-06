@@ -1,13 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=test_neox_125M_FA_BF16
+#SBATCH --job-name=test_neox_7B_NOFA
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
 #SBATCH --mem=480G
-#SBATCH --partition=dev-g
-#SBATCH --time=01:00:00
+#SBATCH --exclusive
+#SBATCH --partition=standard-g
+#SBATCH --time=03:00:00
 #SBATCH --gpus-per-node=8
-#SBATCH --account=project_462000558
+#SBATCH --account=project_462000353
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --error=logs/%x-%j.err
 
@@ -17,10 +18,9 @@ ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.err logs/latest.err
 
 module purge
 module load LUMI/23.09
+module use /projappl/project_462000319/villekom/modules
 module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
 
-#export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
-#export MASTER_PORT=9999
 export TRANSFORMERS_CACHE=$HF_HOME
 
 #DEBUGGING
@@ -31,22 +31,29 @@ export SINGULARITYENV_HSA_FORCE_FINE_GRAIN_PCIE=1
 export SINGULARITYENV_TORCH_DISTRIBUTED_DEBUG=DETAIL
 export SINGULARITYENV_TRANSFORMERS_NO_ADVISORY_WARNINGS=1
 export SINGULARITYENV_TRANSFORMERS_VERBOSITY=error
+
+#Compilers for data builders
 export SINGULARITYENV_CC=gcc-10
 export SINGULARITYENV_CXX=g++-10
+
+#Reduce verbosity in logs
 export SINGULARITYENV_PYTHONWARNINGS=ignore
 export SINGULARITYENV_LANGUAGE="en_US.UTF-8" #Perl complains if these are not set
 export SINGULARITYENV_LC_ALL="en_US.UTF-8"
 
 
-CONFIG="configs/ville/125M"
+CONFIG="configs/ville/7B_8N.yml"
+
+echo "CONF" $CONFIG
 
 # create hostfile
-rm hostfiles/*
 HOSTFILE="hostfiles/$SLURM_JOB_ID.txt"
 mkdir -p $(dirname "$HOSTFILE")
 scontrol show hostnames "$SLURM_JOB_NODELIST" | while read n; do
     echo "$n slots=8" >> "$HOSTFILE"
 done
+
+#CPU Bindings
 c=fe
 MYMASKS="0x${c}000000000000,0x${c}00000000000000,0x${c}0000,0x${c}000000,0x${c},0x${c}00,0x${c}00000000,0x${c}0000000000"
 
@@ -60,4 +67,5 @@ srun --cpu-bind=mask_cpu:$MYMASKS --label singularity exec $SIFPYTORCH \
     train.py $CONFIG \
     --hostfile $HOSTFILE
 
+#rm hostfiles/*
 echo "END: $(date)"

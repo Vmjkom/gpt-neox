@@ -57,7 +57,7 @@ parse_logs() {
 }
 
 # Loop through all files in the log directory
-for log_file in "$log_dir"/*.out
+for log_file in "$log_dir"/*
 do
     parse_logs "$log_file"
 done

@@ -753,7 +753,7 @@ def setup_model_and_optimizer(neox_args, use_cache=False, iteration=None):
         else:
             _model_params = param_groups if optimizer is None else None
             _lr_scheduler = lr_scheduler
-
+        #torch.distributed.barrier()
         model, optimizer, _, lr_scheduler = deepspeed.initialize(
             model=model,
             optimizer=optimizer,

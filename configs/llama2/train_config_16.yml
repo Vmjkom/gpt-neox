@@ -7,27 +7,25 @@
   "output_layer_init_method": "wang_init",
 
   # optimizer settings
-  "optimizer": {
-    "type": "Adam",
-    "params": {
-     "lr": 0.0002,
-     "betas": [0.9, 0.95],
-     "eps":  1.0e-8,
-    }
-  },
+  "optimizer":
+    {
+      "type": "Adam",
+      "params": { "lr": 0.0002, "betas": [0.9, 0.95], "eps": 1.0e-8 },
+    },
   "min_lr": 0.00002,
   "override_lr_scheduler": true,
 
   # for all zero_optimization options, see https://www.deepspeed.ai/docs/config-json/#zero-optimizations-for-fp16-training
-   "zero_optimization": {
-   "stage": 1,
-   "allgather_partitions": true,
-   "allgather_bucket_size": 500000000,
-   "overlap_comm": true,
-   "reduce_scatter": true,
-   "reduce_bucket_size": 500000000,
-   "contiguous_gradients": true,
-  },
+  "zero_optimization":
+    {
+      "stage": 1,
+      "allgather_partitions": true,
+      "allgather_bucket_size": 500000000,
+      "overlap_comm": true,
+      "reduce_scatter": true,
+      "reduce_bucket_size": 500000000,
+      "contiguous_gradients": true,
+    },
 
   # batch / data settings
   "train_batch_size": 256,
@@ -46,38 +44,19 @@
   "weight_decay": 0.1,
   "hidden_dropout": 0,
   "attention_dropout": 0,
-
   # precision settings
-  "fp16": {
-    "enabled": true,
-    "loss_scale": 0,
-    "loss_scale_window": 1000,
-    "hysteresis": 2,
-    "min_loss_scale": 1
-  },
-  "bf16":{
-    "enabled":false
-  },
+  "precision": "bfloat16",
+  "fp32_allreduce": true,
 
   # misc. training settings
-  "train_iters": 100,
-  "lr_decay_iters": 10,
+  "train_iters": 1000,
+  "lr_decay_iters": 1000,
   "distributed_backend": "nccl",
   "lr_decay_style": "cosine",
   "warmup": 0.1,
   "checkpoint_factor": 10000,
-  "eval_interval": 50,
+  "eval_interval": 100,
   "eval_iters": 10,
   "num_workers": 0,
-  # logging
-  "log_interval": 10,
-  "steps_per_print": 5,
   "keep_last_n_checkpoints": 4,
-  "wall_clock_breakdown": true,
-  "comms_logger": {
-        "enabled": True,
-        "verbose": False,
-        "prof_all": True,
-        "debug": False
-    }
 }

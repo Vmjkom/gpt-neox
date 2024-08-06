@@ -9,8 +9,8 @@
   "num_layers": 12,
   "hidden_size": 768,
   "num_attention_heads": 12,
-  "seq_length": 2048,
-  "max_position_embeddings": 2048,
+  "seq_length": 4096,
+  "max_position_embeddings": 4096,
   "norm": "layernorm",
   "pos_emb": "rotary",
   "no_weight_tying": true,
@@ -18,7 +18,7 @@
   "output_layer_parallelism": "column",
 
   #flash_attention - value = num_layers
-  "attention_config": [[["flash"], 12]],
+  #"attention_config": [[["flash"], 12]],
 
   # these should provide some speedup but takes a while to build, set to true if desired
   "scaled_upper_triang_masked_softmax_fusion": true,
@@ -45,7 +45,7 @@
       "allgather_partitions": True,
       "allgather_bucket_size": 500000000,
       "overlap_comm": True,
-      "reduce_scatter": True,
+      "reduce_scatter": false,
       "reduce_bucket_size": 500000000,
       "contiguous_gradients": True,
     },
@@ -64,26 +64,25 @@
   "gradient_clipping": 1.0,
   "weight_decay": 0.1,
   "hidden_dropout": 0.0,
-  "attention_dropout": 0.0,
+  "attention_dropout": 0.9,
 
   # precision settings
   "precision": "bfloat16",
-  "fp32_allreduce": false,
+  "fp32_allreduce": true,
 
   # misc. training settings
-  "train_iters": 32000,
-  "lr_decay_iters": 32000,
+  "train_iters": 1000,
+  "lr_decay_iters": 1000,
   "distributed_backend": "nccl",
   "lr_decay_style": "cosine",
   "warmup": 0.01,
-  "eval_interval": 10,
+  "eval_interval": 100,
   "eval_iters": 10,
   "num_workers": 0,
 
   # logging
   "log_interval": 100,
   "steps_per_print": 10,
-  #"keep_last_n_checkpoints": 4,
   "tensorboard_dir": "logs/tb/",
   "data_path": "data/enwik8/enwik8_text_document",
   "vocab_file": "data/gpt2-vocab.json",
@@ -95,7 +94,6 @@
     {
       "enabled": false,
       "output_path": "logs/tb/",
-      "job_name": "test_neox_125M_FA",
     },
   "comms_logger":
     { "enabled": false, "verbose": false, "prof_all": true, "debug": False },
