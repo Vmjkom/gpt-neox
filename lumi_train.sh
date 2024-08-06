@@ -42,7 +42,7 @@ export SINGULARITYENV_LANGUAGE="en_US.UTF-8" #Perl complains if these are not se
 export SINGULARITYENV_LC_ALL="en_US.UTF-8"
 
 
-CONFIG="configs/ville/7B_8N.yml"
+CONFIG="configs/ville/125M.yml"
 
 echo "CONF" $CONFIG
 

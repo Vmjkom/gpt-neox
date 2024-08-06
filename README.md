@@ -3,6 +3,7 @@
 
 # Lumi documentation
 
+## Setup
 All of the dependencies are readily available in the module PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
 The module is located in `/projappl/project_462000319/villekom/modules`, so to get access just 
 ```
@@ -10,6 +11,11 @@ module use /projappl/project_462000319/villekom/modules
 module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
 ```
 
+## Prepare data
+
+To download and tokenize the enwiki8 dataset follow the steps in the original README under [`Datasets`](#datasets)
+
+## Launching a job
 Both of these steps are done for you in lumi.train.sh, so to start you can just `sbatch lumi_train.sh`, or first get an interactive session with `./interactive.sh`
 
 
