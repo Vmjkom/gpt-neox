@@ -1,5 +1,5 @@
 #!/bin/bash
-salloc -A project_462000558 \
+salloc -A project_462000353 \
     -p dev-g \
     --ntasks-per-node=8 \
     --gpus-per-node=8 \

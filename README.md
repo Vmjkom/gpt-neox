@@ -16,8 +16,16 @@ module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
 To download and tokenize the enwiki8 dataset follow the steps in the original README under [`Datasets`](#datasets)
 
 ## Launching a job
-Both of these steps are done for you in lumi.train.sh, so to start you can just `sbatch lumi_train.sh`, or first get an interactive session with `./interactive.sh`
+Both of these steps are done for you in lumi.train.sh, so to start you can just `sbatch lumi_train.sh`
+For debugging/testing it might be wiser to first get an salloc and iteratively run `lumi_train.sh` through that. There is an ease of use script for salloc [`interactive.sh`](./interactive.sh) (params) NNODES TIME JOB_NAME. For example, to get a 1 node allocation with 1 hour runtime you do this:
+```
+./interactive.sh 1 01:00:00 test-neox
+```
+Read through the rest of gpt-neox's official README to get a better idea configure your own jobs.
+### NOTE
+There was trouble using `deepy.py` with any of the supported launchers on Lumi, so instead of the `deepy.py` we use `run.py`
 
+# End of Lumi spesific Readme
 
 # GPT-NeoX
 
