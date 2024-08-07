@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=test_neox
-#SBATCH --nodes=1
+#SBATCH --job-name=neox_1.8B_europa
+#SBATCH --nodes=32
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
 #SBATCH --mem=480G
 #SBATCH --exclusive
-#SBATCH --partition=dev-g
-#SBATCH --time=00:10:00
+#SBATCH --partition=standard-g
+#SBATCH --time=02-00:00:00
 #SBATCH --gpus-per-node=8
 #SBATCH --account=project_462000353
 #SBATCH --output=logs/%x-%j.out
@@ -17,7 +17,7 @@ ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.out logs/latest.out
 ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.err logs/latest.err
 
 module --force purge
-EBU_USER_PREFIX=/projappl/project_462000353/Easybuild
+export EBU_USER_PREFIX=/projappl/project_462000353/Easybuild
 module load LUMI/23.09
 module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240617
 
