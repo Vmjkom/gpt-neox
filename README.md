@@ -1,47 +1,52 @@
 [![GitHub issues](https://img.shields.io/github/issues/EleutherAI/gpt-neox)](https://github.com/EleutherAI/gpt-neox/issues)
 [<img src="https://raw.githubusercontent.com/wandb/assets/main/wandb-github-badge-28.svg" alt="Weights & Biases monitoring" height=20>](https://wandb.ai/eleutherai/neox)
 
-# Lumi documentation
+# HPLT Documentation
 
-## Module
-All of the dependencies are available in the module PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
-The easybuild config is from https://lumi-supercomputer.github.io/LUMI-EasyBuild-docs/p/PyTorch/PyTorch-2.2.2-rocm-5.6.1-python-3.10-singularity-20240617/
-The missing dependencies from [`requirements.txt`](./requirements/lumi_requirements.txt) we're pip installed into the venv inside the module.
-The module is located in `/projappl/project_462000353/Easybuild`, so to get access run: 
+## Mahti
+
+### Prepare enviroment
 ```
-module --force purge #Lumi module cannot be loaded when changing the EBU_USER_PREFIX enviroment variable
-export EBU_USER_PREFIX=/projappl/project_462000353/Easybuild #Wont work without export
-module load LUMI/23.09 #CrayEnv also works here
-module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240617
+module purge
+module load pytorch
+python3 -m venv .venv --system-site-packages
+
+source .venv/bin/activate
+
+#Pip install requirements
+pip install -r requirements/requirements.txt
+pip install -r requirements/requirements-flashattention.txt
+pip install -r requirements/requirements-tensorboard.txt
 ```
 
-## Prepare data
+### Fineweb ablations
+
+The idea is to run an 1.82B LLama model for 28 billion tokens.
+HF used a GBS of ~2B tokens. The model has a sequence length of 2048.
+More info on the ablations here: https://huggingface.co/spaces/HuggingFaceFW/blogpost-fineweb-v1
+
+#### Launching a job
+There is an [example script](mahti_train.sh) that trains an 1.82B model for roughly around
+28B tokens.
+```
+sbatch mahti_train.sh
+```
+#### Configs
+[./configs/ablations](./configs/ablations/) has some ready made config files that should simulate the fineweb ablations made by HF. The data however at the moment consists of 10B tokens, as the 350B token one is still to be fully downloaded and tokenized.
+### Prepare your own data
 
 To download and prepare the enwiki8 dataset, with the default GPT2Tokenizer
 ```
-module --force purge #This must be done before chaning EBU_USER_PREFIX
-export EBU_USER_PREFIX=/projappl/project_462000353/Easybuild #Get access to the correct module
+module purge
+module load pytorch
+source .venv/bin/activate
 python prepare_data.py -d ./data 
 ```
 
-To see more examples see [`Datasets`](#datasets)
+For more examples see [`Datasets`](#datasets)
 
-## Launching a job
-You can launch a run simply with ```sbatch lumi_train.sh```. Module loading is handled inside the `lumi_train.sh` script.
-For debugging/testing it might be wiser to first get an salloc and iteratively run `lumi_train.sh` through that. There is an ease of use script for salloc [`interactive.sh`](./interactive.sh) (params) NNODES TIME JOB_NAME. For example, to get a 1 node allocation with 1 hour runtime you do this:
-```
-./interactive.sh 1 01:00:00 test-neox
-```
-and then:
-```
-./lumi_train.sh
-```
-Read through the rest of gpt-neox's official README to get a better idea configure your own jobs.
-### NOTE
 
-There was trouble using `deepy.py` with any of the supported launchers on Lumi, so instead of the `deepy.py` we use `run.py`
-
-# End of Lumi spesific Readme
+# End of HPLT specific Readme
 
 # GPT-NeoX
 
