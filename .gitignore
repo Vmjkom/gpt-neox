@@ -163,3 +163,4 @@ core
 *.txt
 temp.txt
 parse_logs.sh
+configs/ville/125M.yml
