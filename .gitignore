@@ -163,4 +163,10 @@ core
 *.txt
 temp.txt
 parse_logs.sh
+mahti_train_4N.sh
+configs/ablations/1_82B_1N_temp.yml
+configs/ville/*
+slurm_scripts/launch_data.sh
+slurm_scripts/mahti_debug.sh
+*temp*
 configs/ville/125M.yml
