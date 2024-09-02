@@ -720,6 +720,7 @@ def main(input_args=None, overwrite_values=None):
         loaded_config,
         args.output_dir,
         sequential=sequential,
+        precision=args.precision,
         architecture=args.architecture,
     )
 
