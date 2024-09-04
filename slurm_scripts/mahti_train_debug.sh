@@ -1,12 +1,12 @@
 #!/bin/bash
-#SBATCH --job-name=1.82B_fineweb-edu_8BT_4N
+#SBATCH --job-name=1.82B_fineweb-edu_test
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=4
-#SBATCH --mem=400G #Maximum amount of memory in the mahti gpu nodes
+#SBATCH --mem=200G #Maximum amount of memory in the mahti gpu nodes
 #SBATCH --cpus-per-task=4
-#SBATCH --partition=gpumedium
-#SBATCH --time=13:00:00
-#SBATCH --gpus-per-node=a100:4
+#SBATCH --partition=gputest
+#SBATCH --time=00:15:00
+#SBATCH --gpus-per-node=v100:4
 #SBATCH --account=project_2010225
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --error=logs/%x-%j.err

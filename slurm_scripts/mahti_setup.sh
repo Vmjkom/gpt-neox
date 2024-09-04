@@ -18,6 +18,7 @@ python3 -m venv .venv --system-site-packages
 source .venv/bin/activate
 
 #Pip install requirements
+pip install --upgrade pip
 pip install -r requirements/requirements.txt
 pip install -r requirements/requirements-tensorboard.txt
 pip install -r requirements/requirements-flashattention.txt

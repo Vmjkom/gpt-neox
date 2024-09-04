@@ -16,7 +16,7 @@ source .venv/bin/activate
 #Pip install requirements
 pip install -r requirements/requirements.txt
 pip install -r requirements/requirements-flashattention.txt
-pip install -r requirements/requirements-tensorboard.txt
+pip install -r requirements/requirements-tensorboard.txt #Optional
 ```
 
 ### Fineweb ablations
@@ -33,10 +33,16 @@ sbatch mahti_train.sh
 ```
 #### Configs
 [./configs/ablations](./configs/ablations/) has some ready made config files that should simulate the fineweb ablations made by HF. The data however at the moment consists of 10B tokens, as the 350B token one is still to be fully downloaded and tokenized.
+The ready made configs follow a naming scheme of: NumberOfParametersInB_NumberOfNodes.yml
+The batch sizes
+
+Change the paths in the following points to your scratch
+"save": "/scratch/project_2010225/villekom/checkpoints/fineweb-edu-8BT/1N",
 ### Prepare your own data
 
-To download and prepare the enwiki8 dataset, with the default GPT2Tokenizer
+To download and prepare the enwiki8 dataset, with the default GPT2Tokenizer. This downloads the gpt2 tokenizer files and the enwiki dataset and finally tokenizes it to a format suitable for training on gpt-neox/megatron.
 ```
+export PYTHONPATH=.venv/lib/python3.9/site-packages
 module purge
 module load pytorch
 source .venv/bin/activate
