@@ -2,7 +2,7 @@
 {
   # parallelism settings ( you will want to change these based on your cluster setup, ideally scheduling pipeline stages
   # across the node boundaries )
-  "pipe_parallel_size": 1,
+  "pipe_parallel_size": 0,
   "model_parallel_size": 1,
 
   "seed": 42,
