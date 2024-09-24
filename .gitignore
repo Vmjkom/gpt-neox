@@ -163,6 +163,7 @@ core
 *.txt
 temp.txt
 parse_logs.sh
-configs/*
+configs/*debug*
 train_venv.sh
 slurm_scripts/setup.sh
+configs/ablations/llama_2B_debug.yml

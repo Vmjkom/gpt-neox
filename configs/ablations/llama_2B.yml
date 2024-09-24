@@ -1,0 +1,129 @@
+# GPT-2 pretraining setup
+{
+  # parallelism settings ( you will want to change these based on your cluster setup, ideally scheduling pipeline stages
+  # across the node boundaries )
+  "pipe_parallel_size": 1,
+  "model_parallel_size": 1,
+
+  "seed": 42,
+
+  #Tokenizer
+  "make_vocab_size_divisible_by": 1,
+  "tokenizer_type":"GPT2BPETokenizer",
+  "data_path": "/scratch/project_462000353/jburdge/data/fineweb-edu-100B/tokenized/gpt2_text_document",
+  "vocab_file": "/scratch/project_462000353/tokenizers/gpt2/vocab.json",
+  "merge_file": "/scratch/project_462000353/tokenizers/gpt2/merges.txt",
+
+
+  # model settings
+  "num_layers": 24,
+  "hidden_size": 2048,
+  "num_attention_heads": 32,
+  "seq_length": 2048,
+  "max_position_embeddings": 2048,
+  "norm": "rmsnorm",
+  "rms_norm_epsilon": 1.0e-05,
+  "pos_emb": "rotary",
+  "no_weight_tying": false,
+  "gpt_j_residual": false,
+  "output_layer_parallelism": "column",
+  "intermediate_size": 8192,
+  "num_kv_heads": 32,
+  "use_bias_in_attn_linear": false,
+  "use_bias_in_mlp": false,
+  "apply_query_key_layer_scaling": false,
+  "attention_softmax_in_fp32": true,  
+  "activation": "swiglu",
+  "mlp_multiple_of": 256,
+  
+
+  #flash_attention - value = num_layers
+  "attention_config": [[["flash"], 24]],
+
+  # these should provide some speedup but takes a while to build, set to true if desired
+  "scaled_upper_triang_masked_softmax_fusion": false,
+  "bias_gelu_fusion": false,
+  "rope_fusion": false,
+  "layernorm_fusion": false,
+  "bias_dropout_fusion": false,
+
+  # init methods
+  "init_method": "small_init",
+  init_method_std: 0.014,
+  "output_layer_init_method": "wang_init",
+
+  # optimizer settings
+  "optimizer":
+    {
+      "type": "Adam",
+      "params": { "lr": 1.5e-4, "betas": [0.9, 0.95], "eps": 1.0e-5 },
+    },
+  "min_lr": 1.5e-5,
+
+  # for all zero_optimization options, see https://www.deepspeed.ai/docs/config-json/#zero-optimizations-for-fp16-training
+  "zero_optimization":
+    {
+      "stage": 0,
+      "allgather_partitions": True,
+      "allgather_bucket_size": 50000000,
+      "overlap_comm": True,
+      "reduce_scatter": false,
+      "reduce_bucket_size": 50000000,
+      "contiguous_gradients": True,
+    },
+
+  # batch / data settings
+  #"train_batch_size": 1024,
+  "train_micro_batch_size_per_gpu": 4,
+  "gradient_accumulation_steps": 4,
+  "data_impl": "mmap",
+
+  # activation checkpointing
+  "checkpoint_activations": false,
+  "checkpoint_num_layers": 1,
+  "partition_activations": false,
+  "synchronize_each_layer": false,
+
+  # regularization
+  "gradient_clipping": 1.0,
+  "weight_decay": 1.0e-1,
+  "hidden_dropout": 0.0,
+  "attention_dropout": 0.0,
+
+  # precision settings
+  "precision": "bfloat16",
+  "fp32_allreduce": true,
+
+  # misc. training settings
+  "train_iters": 13350,
+  "lr_decay_iters": 13350,
+  "distributed_backend": "nccl",
+  "lr_decay_style": "cosine",
+  "warmup": 0.097,
+  "eval_interval": 100,
+  "eval_iters": 10,
+  "num_workers": 0,
+  #"save": "/scratch/project_462000353/villekom/checkpoints/fineweb-edu-28BT/8N",
+  #"load": "/scratch/project_462000353/villekom/checkpoints/fineweb-edu-28BT/8N",
+  "checkpoint_factor": 2000,
+
+  # logging
+  "log_interval": 1,
+  "steps_per_print": 10,
+  "tensorboard_dir": "logs/tb/",
+  "log_grad_pct_zeros": True,
+  #"log_param_norm": True,
+  "log_grad_norm": True,
+  #"log_optimizer_states": True,
+  "log_gradient_noise_scale": False, #Gradient Noise Scale logging does not work with zero stage 2+, as the gradients are distributed across ranks.
+
+  #Deepspeed misc
+  "wall_clock_breakdown": false,
+  "tensorboard":
+    {
+      "enabled": false,
+      "output_path": "logs/tb/",
+    },
+  "comms_logger":
+    { "enabled": false, "verbose": false, "prof_all": true, "debug": False },
+}
