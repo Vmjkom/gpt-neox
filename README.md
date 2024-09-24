@@ -17,7 +17,7 @@ module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240617
 
 ## Prepare data
 
-To download and prepare the enwiki8 dataset, with the default GPT2Tokenizer
+To download and prepare the enwiki8 dataset with the default GPT2Tokenizer:
 ```
 module --force purge #This must be done before chaning EBU_USER_PREFIX
 export EBU_USER_PREFIX=/projappl/project_462000353/Easybuild #Get access to the correct module
@@ -28,8 +28,9 @@ python prepare_data.py -d ./data
 To see more examples see [`Datasets`](#datasets)
 
 ## Launching a job
-You can launch a run simply with ```sbatch train.sh```. Module loading is handled inside the `train.sh` script.
-For debugging/testing it might be wiser to first get an salloc and iteratively run `train.sh` through that. There is an ease of use script for salloc [`interactive.sh`](./interactive.sh) (params) NNODES TIME JOB_NAME. For example, to get a 1 node allocation with 1 hour runtime you do this:
+You can launch a run with ```sbatch train.sh```.
+For debugging/testing it might be wiser to first get an allocation with salloc and iteratively run `train.sh`. There is an ease of use script for salloc [`interactive.sh`](./interactive.sh) (params) NNODES TIME JOB_NAME. 
+For example, to get a 1 node allocation with 1 hour runtime:
 ```
 ./interactive.sh 1 01:00:00 test-neox
 ```
@@ -37,7 +38,7 @@ and then:
 ```
 ./train.sh
 ```
-Read through the rest of gpt-neox's official README to get a better idea configure your own jobs.
+Read through the rest of gpt-neox's official README to get a better idea how to configure your own jobs.
 ### NOTE
 
 There was trouble using `deepy.py` with any of the supported launchers on Lumi, so instead of the `deepy.py` we use `run.py`
