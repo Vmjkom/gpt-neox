@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH --job-name=neox_1.8B_europa
-#SBATCH --nodes=32
+#SBATCH --job-name=test_llama_2B_fineweb28BT_2N
+#SBATCH --nodes=2
 #SBATCH --ntasks-per-node=8
 #SBATCH --cpus-per-task=7
 #SBATCH --mem=480G
 #SBATCH --exclusive
-#SBATCH --partition=standard-g
-#SBATCH --time=02-00:00:00
+#SBATCH --partition=dev-g
+#SBATCH --time=00:20:00
 #SBATCH --gpus-per-node=8
-#SBATCH --account=project_462000353
+#SBATCH --account=project_462000615
 #SBATCH --output=logs/%x-%j.out
 #SBATCH --error=logs/%x-%j.err
 
@@ -16,17 +16,16 @@
 ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.out logs/latest.out
 ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.err logs/latest.err
 
-module --force purge
+module purge
 export EBU_USER_PREFIX=/projappl/project_462000353/Easybuild
 module load LUMI/23.09
 module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240617
 
-
-export TRANSFORMERS_CACHE=$HF_HOME
+export TRANSFORMERS_CACHE=$HF_HOME #Change this
 
 #DEBUGGING
-export SINGULARITYENV_HIP_LAUNCH_BLOCKING=1
-export SINGULARITYENV_HSA_FORCE_FINE_GRAIN_PCIE=1
+#export SINGULARITYENV_HIP_LAUNCH_BLOCKING=1
+#export SINGULARITYENV_HSA_FORCE_FINE_GRAIN_PCIE=1
 #export SINGULARITYENV_NCCL_DEBUG=INFO
 #export SINGULARITYENV_NCCL_DEBUG_SUBSYS=INIT,COLL
 export SINGULARITYENV_TORCH_DISTRIBUTED_DEBUG=DETAIL
@@ -41,9 +40,15 @@ export SINGULARITYENV_CXX=g++-10
 export SINGULARITYENV_PYTHONWARNINGS=ignore
 export SINGULARITYENV_LANGUAGE="en_US.UTF-8" #Perl complains if these are not set
 export SINGULARITYENV_LC_ALL="en_US.UTF-8"
+#singularity exec $SIFPYTORCH echo "LD" $LD_LIBRARY_PATH
+#singularity exec $SIFPYTORCH echo "CRAY"$CRAY_LD_LIBRARY_PATH
+#export SINGULARITYENV_LD_LIBRARY_PATH=$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH
+#singularity exec $SIFPYTORCH echo $LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=$CRAY_LD_LIBRARY_PATH:$LD_LIBRARY_PATH
 
+#export LOCAL_RANK=$SLURM_LOCALID
 
-CONFIG="configs/ville/125M.yml"
+CONFIG="configs/ablations/llama_2B_debug.yml"
 
 echo "CONF" $CONFIG
 
