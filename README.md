@@ -3,7 +3,7 @@
 
 # Lumi documentation
 
-## Module
+## Enviroment for training - Module
 All of the dependencies are available in the module PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240404
 The easybuild config is from https://lumi-supercomputer.github.io/LUMI-EasyBuild-docs/p/PyTorch/PyTorch-2.2.2-rocm-5.6.1-python-3.10-singularity-20240617/
 The missing dependencies from [`requirements.txt`](./requirements/lumi_requirements.txt) we're pip installed into the venv inside the module.
