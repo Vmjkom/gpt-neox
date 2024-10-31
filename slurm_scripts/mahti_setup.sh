@@ -12,6 +12,7 @@
 mkdir -p logs
 
 #Setup a python virtual enviroment
+module purge
 module load pytorch
 python3 -m venv .venv --system-site-packages
 

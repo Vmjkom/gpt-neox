@@ -170,3 +170,4 @@ slurm_scripts/launch_data.sh
 slurm_scripts/mahti_debug.sh
 *temp*
 configs/ville/125M.yml
+slurm_scripts/mahti_train_debug.sh

@@ -10,11 +10,10 @@
   #Tokenizer
   "make_vocab_size_divisible_by": 8,
   #"padded_vocab_size": 50256, #
-  "tokenizer_type":"GPT2BPETokenizer",
+  "tokenizer_type": "GPT2BPETokenizer",
   "data_path": "/scratch/project_2010225/data/fineweb-edu/fineweb_edu_10BT",
   "vocab_file": "/scratch/project_2010225/tokenizers/ablation-model-fineweb-edu/vocab.json",
   "merge_file": "/scratch/project_2010225/tokenizers/ablation-model-fineweb-edu/merges.txt",
-
 
   # model settings
   "num_layers": 24,
@@ -35,7 +34,6 @@
   "attention_softmax_in_fp32": true,
   "activation": "silu",
   "mlp_type": "llama",
-  
 
   #flash_attention - value = num_layers
   "attention_config": [[["flash"], 24]],
@@ -104,7 +102,8 @@
   "eval_iters": 100,
   "num_workers": 0,
   "save": "/scratch/project_2010225/villekom/checkpoints/fineweb-edu-8BT/4N",
-  "checkpoint_factor": 500,
+  "load": "/scratch/project_2010225/villekom/checkpoints/fineweb-edu-8BT/4N",
+  "checkpoint_factor": 2000,
 
   # logging
   "log_interval": 1,
@@ -118,11 +117,7 @@
 
   #Deepspeed misc
   "wall_clock_breakdown": false,
-  "tensorboard":
-    {
-      "enabled": false,
-      "output_path": "logs/tb/",
-    },
+  "tensorboard": { "enabled": false, "output_path": "logs/tb/" },
   "comms_logger":
     { "enabled": false, "verbose": false, "prof_all": true, "debug": False },
 }
