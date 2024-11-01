@@ -18,7 +18,7 @@ ln -f -s $SLURM_JOB_NAME-$SLURM_JOB_ID.err logs/latest.err
 
 module purge
 export EBU_USER_PREFIX=/projappl/project_462000353/Easybuild
-module load LUMI/23.09
+module load LUMI/23.09 partition/G
 module load PyTorch/2.2.2-rocm-5.6.1-python-3.10-singularity-20240617
 
 export TRANSFORMERS_CACHE=$HF_HOME #Change this
