@@ -4,6 +4,6 @@
   "merge_file": "data/gpt2-merges.txt",
   #"save": "checkpoints",
   "checkpoint_validation_with_forward_pass": false,
-  "tensorboard_dir": "logs/tb/test_neox_125M",
-  #"log_dir": "logs"
+  "tensorboard_dir": "tensorboard",
+  "log_dir": "logs",
 }

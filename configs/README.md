@@ -124,6 +124,8 @@ These can be set to any integer between `0` and `num_gpus`, and `num_gpus` must 
     # this should provide some speedup but takes a while to build, set to true if desired
    "scaled_upper_triang_masked_softmax_fusion": false,
    "train_iters": 320000,
+    # alternatively, use train_epochs to automatically determine the number of training iterations
+    #"train_epochs": 1,
 ```
 An example of some basic settings used to configure your model's architecture and number of training steps.
 
@@ -235,7 +237,32 @@ Additional DeepSpeed settings besides those mentioned above should be wrapped in
    "eval_iters": 10,
 ```
 
-However, if you want to use DPO style training you'll need to set pos/neg data paths instead of a single one, e.g.
+For KTO style training, you'll need to add the reward & label data path, e.g.:
+
+```yaml
+   "data_impl": "mmap",
+   # Suggested data paths when using GPT-NeoX locally
+   "train_data_path": "data/enwik8/enwik8_text_document",
+   "train_label_data_path": "data/enwik8/enwik8_text_label_document",
+   "train_reward_data_path": "data/enwik8/enwik8_text_reward_document",
+   "test_data_path": "data/enwik8/enwik8_text_document",
+   "test_label_data_path": "data/enwik8/enwik8_text_label_document",
+   "test_reward_data_path": "data/enwik8/enwik8_text_reward_document",
+   "valid_data_path": "data/enwik8/enwik8_text_document",
+   "valid_label_data_path": "data/enwik8/enwik8_text_label_document",
+   "valid_reward_data_path": "data/enwik8/enwik8_text_reward_document",
+   "vocab_file": "data/gpt2-vocab.json",
+   "merge_file": "data/gpt2-merges.txt",
+   "save": "checkpoints",
+   "load": "checkpoints",
+   "tensorboard_dir": "tensorboard",
+   "log_dir": "logs",
+   "checkpoint_factor": 10000,
+   "eval_interval": 1000,
+   "eval_iters": 10,
+```
+
+For DPO style training, you'll need to set pos/neg data paths instead of a single one, e.g.
 
 ```yaml
    "dataset_impl": "pairwise",
