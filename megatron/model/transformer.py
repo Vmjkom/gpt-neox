@@ -123,7 +123,6 @@ class ParallelMLP(nn.Module):
             # 4h is default for ffn_dim
             ffn_dim = 4 * neox_args.hidden_size
         ffn_dim_in = ffn_dim
-        print_rank_0(f"ffn and ffn_dim_in before gating {ffn_dim}")
         if self.is_gated:
             # set activation function to be gated implementation
             self.activation_func = Gated_Activation(
@@ -135,7 +134,6 @@ class ParallelMLP(nn.Module):
             # auto scale so gated activations has equal parameters
             ffn_dim = int(ffn_dim * 2 / 3)
             ffn_dim_in = ffn_dim // 2
-            print_rank_0(f"ffn after gating {ffn_dim}")
         # set multiple
         ffn_dim = int(
             (2 * self.multiple_of)
@@ -185,7 +183,6 @@ class ParallelMLP(nn.Module):
 
         # [s, b, h]
         output, output_bias = self.linear2(intermediate_parallel)
-        print(f"Output from mlp forward pass {output}")
         return output, output_bias
 
 
@@ -197,7 +194,6 @@ class Gated_Activation(torch.nn.Module):
 
     def forward(self, x, bias=None):
         x, gate = x.chunk(2, dim=-1)
-        print_rank_0(f"Gated activation parameters \n x: {x.shape} \n gate:{gate.shape}")
         if bias is not None:
             bias_1, bias_2 = bias.chunk(2, dim=-1)
             x = x + bias_1
@@ -632,7 +628,6 @@ class ParallelSelfAttention(nn.Module):
         )
 
         if self.use_flash_attention and not self.use_triton:
-            #print_rank_0("Not using triton")
             # [sk, b, np, hn] -> [b, sk, np, hn] -> [b * sk, 1, np, hn]
             key_layer = key_layer.transpose(0, 1).reshape(
                 output_size[0], output_size[3], self.num_kv_heads_per_partition, -1
@@ -709,7 +704,6 @@ class ParallelSelfAttention(nn.Module):
                 # [b, sq, np, hn] -> [b, np, sq, hn]
                 matmul_result = matmul_result.transpose(1, 2)
             else:
-                #print_rank_0("Not using varlen")
                 output = self.flash_qkv_fn(
                     query_layer,
                     key_layer,
@@ -725,7 +719,6 @@ class ParallelSelfAttention(nn.Module):
             matmul_result = matmul_result.transpose(1, 2)
 
         else:
-            #print_rank_0("Using triton line 732")
             # we still use Triton if using AliBi with flash-attn<2.4.0.post1.
 
             # [sq, b, np, hn] -> [b, sq, np, hn]
@@ -1286,8 +1279,6 @@ class ParallelTransformerLayer(nn.Module):
                 ):
                     # No dropout either
                     assert mlp_bias is None
-                    print_rank_0(f"Mlp output: {mlp_output.shape}")
-                    print_rank_0(f"Attention output: {attention_output.shape}")
                     output = mlp_output + attention_output
                 else:
                     output = bias_dropout_fn(

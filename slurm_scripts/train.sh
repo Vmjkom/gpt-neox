@@ -48,7 +48,7 @@ export SINGULARITYENV_LC_ALL="en_US.UTF-8"
 
 #export LOCAL_RANK=$SLURM_LOCALID
 
-CONFIG="configs/ablations/llama_2B_debug.yml"
+CONFIG="configs/ablations/llama_2B.yml"
 
 echo "CONF" $CONFIG
 
