@@ -52,6 +52,7 @@ from deepspeed.moe.layer import MoE
 
 try:
     from flash_attn.ops.activations import swiglu
+    print("Using flash_attn swiglu")
 except ImportError:
     swiglu = None
 
@@ -122,6 +123,7 @@ class ParallelMLP(nn.Module):
             # 4h is default for ffn_dim
             ffn_dim = 4 * neox_args.hidden_size
         ffn_dim_in = ffn_dim
+        print_rank_0(f"ffn and ffn_dim_in before gating {ffn_dim}")
         if self.is_gated:
             # set activation function to be gated implementation
             self.activation_func = Gated_Activation(
@@ -133,6 +135,7 @@ class ParallelMLP(nn.Module):
             # auto scale so gated activations has equal parameters
             ffn_dim = int(ffn_dim * 2 / 3)
             ffn_dim_in = ffn_dim // 2
+            print_rank_0(f"ffn after gating {ffn_dim}")
         # set multiple
         ffn_dim = int(
             (2 * self.multiple_of)
@@ -182,6 +185,7 @@ class ParallelMLP(nn.Module):
 
         # [s, b, h]
         output, output_bias = self.linear2(intermediate_parallel)
+        print(f"Output from mlp forward pass {output}")
         return output, output_bias
 
 
@@ -193,6 +197,7 @@ class Gated_Activation(torch.nn.Module):
 
     def forward(self, x, bias=None):
         x, gate = x.chunk(2, dim=-1)
+        print_rank_0(f"Gated activation parameters \n x: {x.shape} \n gate:{gate.shape}")
         if bias is not None:
             bias_1, bias_2 = bias.chunk(2, dim=-1)
             x = x + bias_1
@@ -1281,6 +1286,8 @@ class ParallelTransformerLayer(nn.Module):
                 ):
                     # No dropout either
                     assert mlp_bias is None
+                    print_rank_0(f"Mlp output: {mlp_output.shape}")
+                    print_rank_0(f"Attention output: {attention_output.shape}")
                     output = mlp_output + attention_output
                 else:
                     output = bias_dropout_fn(
