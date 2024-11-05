@@ -32,23 +32,28 @@ def main(args):
         prefixes.add(prefix)
 
     builder = None
+    print(f"Prefix: {prefix}")
     for prefix in sorted(prefixes):
         if builder is None:
             dataset = indexed_dataset.make_dataset(
                 os.path.join(args.input, prefix), "infer"
             )
-
+            print(f"dataset at line 41 {dataset}")
             if isinstance(dataset, indexed_dataset.MMapIndexedDataset):
                 builder = indexed_dataset.MMapIndexedDatasetBuilder(
                     args.output_prefix + ".bin", dtype=dataset._index.dtype
                 )
             else:
-                builder = indexed_dataset.IndexedDatasetBuilder(
-                    args.output_prefix + ".bin"
+                #builder = indexed_dataset.IndexedDatasetBuilder(
+                #    args.output_prefix + ".bin"
+                #)
+                builder = indexed_dataset.MMapIndexedDatasetBuilder(
+                    args.output_prefix + ".bin", dtype=dataset._index.dtype
                 )
 
             del dataset
-
+        print(f"File: {os.path.join(args.input, prefix)}")
+        print(f"Builder: {builder}")
         builder.merge_file_(os.path.join(args.input, prefix))
 
     builder.finalize(args.output_prefix + ".idx")
