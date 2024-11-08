@@ -21,7 +21,7 @@ import argparse
 import multiprocessing
 import os
 import sys
-
+from time import sleep
 import lm_dataformat as lmd
 import numpy as np
 
@@ -183,10 +183,10 @@ def main(input_args=None):
 
     # use multiprocessing to iterate over input documents
     fin = yield_from_files(args.input.split(","), semaphore)
-
     if args.workers > 1:
         pool = multiprocessing.Pool(args.workers, initializer=encoder.initializer)
-        encoded_docs = pool.imap(encoder.encode, fin, chunksize=25)
+        chunksize = 10
+        encoded_docs = pool.imap(encoder.encode, fin, chunksize=chunksize)
     else:
         encoder.initializer()
         encoded_docs = (encoder.encode(doc) for doc in fin)
@@ -232,7 +232,7 @@ def main(input_args=None):
             elapsed = current - proc_start
             mbs = total_bytes_processed / elapsed / 1024 / 1024
             pbar.set_description(
-                f"Processed {i}{'' if args.num_docs is None else '/' + str(args.num_docs)} documents ({i / elapsed :.2f} docs/s, {mbs:.2f} MB/s)."
+                f"Rank:{str(os.environ['SLURM_PROCID'])} Processed {i}{'' if args.num_docs is None else '/' + str(args.num_docs)} documents ({i / elapsed :.2f} docs/s, {mbs:.2f} MB/s)."
             )
             if i != 0:
                 pbar.update(args.log_interval)
