@@ -35,7 +35,7 @@ def main(args):
     for prefix in sorted(prefixes):
         if builder is None:
             dataset = indexed_dataset.make_dataset(
-                os.path.join(args.input, prefix), "infer"
+                os.path.join(args.input, prefix), "mmap"
             )
 
             if isinstance(dataset, indexed_dataset.MMapIndexedDataset):
@@ -43,7 +43,10 @@ def main(args):
                     args.output_prefix + ".bin", dtype=dataset._index.dtype
                 )
             else:
-                builder = indexed_dataset.IndexedDatasetBuilder(
+                #builder = indexed_dataset.IndexedDatasetBuilder(
+                #    args.output_prefix + ".bin"
+                #)
+                builder = indexed_dataset.MMapIndexedDatasetBuilder(
                     args.output_prefix + ".bin"
                 )
 
