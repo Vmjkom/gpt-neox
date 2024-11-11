@@ -149,10 +149,7 @@ def _initialize_distributed(neox_args):
 
         deepspeed.init_distributed(
             dist_backend=neox_args.distributed_backend,
-            auto_mpi_discovery=True,
-            distributed_port=os.getenv("MASTER_PORT", "6000"),
-            #rank=os.getenv("RANK",1),
-            #world_size=os.getenv("WORLD_SIZE",1),
+            auto_mpi_discovery=False,
             verbose=True,
         )
 
