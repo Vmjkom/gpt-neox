@@ -164,3 +164,4 @@ core
 temp.txt
 parse_logs.sh
 configs/*
+slurm_scripts/debug.sh
