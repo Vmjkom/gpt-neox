@@ -163,5 +163,5 @@ core
 *.txt
 temp.txt
 parse_logs.sh
-configs/*
+configs/*debug*
 slurm_scripts/debug.sh
